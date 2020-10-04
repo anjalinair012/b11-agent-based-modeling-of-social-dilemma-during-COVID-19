@@ -4,13 +4,29 @@ from mesa.datacollection import DataCollector
 from mesa.time import RandomActivation
 import numpy as np
 
-import enum
+from agent import MainAgent
 
+import enum
+import csv
+
+# infection and quarantine states
+
+class InfectionState(enum.IntEnum) :
+	CLEAN = 0
+	INFECTED = 1
+	RECOVERED = 2
+
+	
+class QuarantineState(enum.IntEnum) :
+	QUARANTINE = 3
+	FREE = 4
 
 ## Declare the Main Model of parameters
 
 class MainModel(Model) :
-	def __init__(self, population_density, death_rate, transfer_rate, initial_infection_rate, width, height, recovery_days=21) :
+	def __init__(self, population_density, death_rate, transfer_rate, 
+				initial_infection_rate, width, height, government_stringent, government_action_threshold, recovery_days = 11, 
+				habituation=0.1, learning_rate=0.3, global_aspiration=0.6) :
 
 		self.population_density = population_density
 		self.death_rate = death_rate
@@ -19,26 +35,52 @@ class MainModel(Model) :
 		self.transfer_rate = transfer_rate
 		self.initial_infection_rate = initial_infection_rate
 		self.recovery_days=recovery_days
-		self.incubation_time=4
 		self.dead_agents_number = 0
+
+		# graphing parameters
+		self.dilemma_list =[] 
+
+
+		## Parameters for the government actions
+
+		# After this threshold, government imposes lockdown and self quarantine rules
+		self.government_action_threshold = government_action_threshold
+
+		# The strictness of the government
+		self.government_stringent = government_stringent
+
+		self.lockdown = False
+
+		# The probability of an agent to self quarentine after he gets infected
+		self.quarantine_prob = 0.3
+
+		# parameter setting for the social dilemma problem
+		self.habituation = habituation
+		self.learning_rate = learning_rate
+		self.global_aspiration = global_aspiration
+		self.action_count = 4
+		self.action_infection_prob = {
+			"Stay In": 0.1,
+			"Party" : 0.7,
+			"Buy grocery" : 0.5,
+			"Help elderly" : 0.5
+		}
 
 		self.grid = SingleGrid(width, height, True)
 		self.schedule = RandomActivation(self)
-
 		i = 0
 
 		# Get all the cells in SingleGrid
-
 		for cell in self.grid.coord_iter() :
 			x, y = cell[1], cell[2]
 
 			# Add agents and infect them with initial infection rate
-			
 			if self.random.random() < self.population_density :
 				agent = MainAgent(i, self, (x, y))
 
 				if (np.random.choice([0, 1], p = [1 - self.initial_infection_rate, self.initial_infection_rate])) == 1 :
-					agent.state = InfectionState.INFECTED
+					agent.infectionstate = InfectionState.INFECTED
+					agent.quarantinestate = QuarantineState.FREE
 					agent.infected_time=self.schedule.time   # time of infection is added for every agent
 
 				self.grid.position_agent(agent, (x,y))
@@ -48,108 +90,71 @@ class MainModel(Model) :
 		self.total_population = i
 
 		self.running = True
-		self.datacollector = DataCollector(agent_reporters={"State": "state"})
+		self.datacollector = DataCollector(agent_reporters={"QuarantineState": "quarantinestate", 
+															"InfectionState" : "infectionstate"})
 
-	# Get number of infected agents
+	def get_susceptible_number(self):
+		#Get number of susceptible agents
 
-	def get_infection_number(self) :
-		infected_number = 0
+		susceptible_number = 0
 		for cell in self.grid.coord_iter() :
 			if (cell[0] != None) :
 				agent = cell[0]
-				if agent.state == InfectionState.INFECTED :
+				if (agent.infectionstate == InfectionState.CLEAN):
+					susceptible_number = susceptible_number + 1
+		return susceptible_number
+	
+	def get_infection_number(self) :
+		# Get number of infected agents
+
+		infected_number = 0
+		for cell in self.grid.coord_iter() :
+			if (cell[0] != None):
+				agent = cell[0]
+				if (agent.infectionstate == InfectionState.INFECTED):
 					infected_number = infected_number + 1
 		return infected_number
 
-
-	# Get number of recovered agents
-
 	def get_recovered_number(self) :
+		# Get number of recovered agents
+
 		recovered_number = 0
 		for cell in self.grid.coord_iter() :
-			if (cell[0] != None) :
+			if (cell[0] != None):
 				agent = cell[0]
-				if agent.state == QuarentineState.FREE :
+				if (agent.infectionstate == InfectionState.RECOVERED):
 					recovered_number = recovered_number + 1
 		return recovered_number
 
-	# Get total dead agents
-
 	def get_dead_number(self) :
+		# Get total dead agents
 		return self.dead_agents_number
-				
+
+	# Save the CSV of the agents action for plotting
+
+	##TO DO : give arguments to server to specify csv name
+
+	def save_csv(self) :
+		with open("simulations/dilemma_" + "stringent_" + str(self.government_stringent) + ".csv", "w", newline='') as file :
+			writer = csv.writer(file)
+			writer.writerows(self.dilemma_list)
 
 	def step(self) :
 
 		self.datacollector.collect(self)
 		self.schedule.step()
 
-		# Stop the simulation if entire population gets infected
-		
-		if self.get_infection_number() == self.total_population :
-			self.running = False
+		if ((self.get_infection_number()/self.total_population) > self.government_action_threshold):
+			self.lockdown = True
+
+		# Stop the simulation if the virus is eradicated
+		if ((self.get_recovered_number() + self.get_dead_number()) == self.total_population):
+		 	self.running = False
+		 	self.save_csv()
+		 	
 
 
-# Infection states. I havent added the state SUSCEPTIBLE since everyone is susceptible to covid19 (Age, asymptomatic parameters will be added in later versions)
-
-class InfectionState(enum.IntEnum) :
-	CLEAN = 0
-	INFECTED = 1
-
-class QuarentineState(enum.IntEnum) :
-	FREE = 2
-	QUARENTINE = 3
-	
-
-class MainAgent(Agent) :
-	def __init__(self, unique_id, model, pos) :
-		super().__init__(unique_id, model)
-		self.state = InfectionState.CLEAN
-		self.infected_time=0
+'''Infection states. SUSCEPTIBLE state isn't added since everyone is susceptible to covid19 
+'''
 
 
-
-	# Spreading the virus based on contact with nearby cells
-
-	def spread(self) :
-		possible_spread_list = self.model.grid.get_neighborhood(self.pos, moore=True, include_center=False)
-
-		# If the nearby cell is not empty and transfer probability is below the predefined value, infect the neighbour
-
-		for possible_spread in possible_spread_list :
-			if (self.model.grid.is_cell_empty(possible_spread) == False) and (self.random.random() < self.model.transfer_rate) and (self.state == InfectionState.INFECTED) :
-				agent = self.model.grid.get_cell_list_contents(possible_spread)[0]
-				if (agent.state == InfectionState.CLEAN) :
-					agent.state = InfectionState.INFECTED
-					agent.infected_time=self.model.schedule.time  
-
-
-	def move(self) :
-		# agent moves only if not in quarentine
-		if self.state != QuarentineState.QUARENTINE:
-			self.model.grid.move_to_empty(self)
-
-
-	# update agents from infected/quarentine -> dead, infected/quarentine -> recover, infected -> quarentine
-	def update_status(self):
-		if self.state in [InfectionState.INFECTED,QuarentineState.QUARENTINE] and self.model.recovery_days < self.model.schedule.time-self.infected_time:
-			if np.random.choice([0,1], p=[1-self.model.death_rate,self.model.death_rate]) == 1:
-				self.model.grid.remove_agent(self)
-				self.model.schedule.remove(self)
-				self.model.dead_agents_number = self.model.dead_agents_number + 1
-			self.state = QuarentineState.FREE
-		elif self.state == InfectionState.INFECTED and self.model.incubation_time < self.model.schedule.time-self.infected_time:
-			self.state = QuarentineState.QUARENTINE
-
-		
-	def step(self) :
-		self.spread()
-		self.move()
-		self.update_status()
-
-# model = MainModel(population_density, death_rate, transfer_rate, initial_infection_rate, width, height)
-
-# steps = 10
-
-# for i in range(steps) :
-# 	model.step()
