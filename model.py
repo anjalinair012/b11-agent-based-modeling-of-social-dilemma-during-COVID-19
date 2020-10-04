@@ -8,6 +8,7 @@ from agent import MainAgent
 
 import enum
 import csv
+import os
 
 # infection and quarantine states
 
@@ -135,6 +136,8 @@ class MainModel(Model) :
 	##TO DO : give arguments to server to specify csv name
 
 	def save_csv(self) :
+		if not os.path.exists('simulations'):
+			os.makedirs('simulations')
 		with open("simulations/dilemma_" + "stringent_" + str(self.government_stringent) + ".csv", "w", newline='') as file :
 			writer = csv.writer(file)
 			writer.writerows(self.dilemma_list)
