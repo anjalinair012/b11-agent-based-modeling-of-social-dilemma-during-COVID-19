@@ -1,9 +1,14 @@
 from mesa.visualization.ModularVisualization import ModularServer
-from mesa.visualization.modules import CanvasGrid, ChartModule, TextElement
+from mesa.visualization.modules import CanvasGrid, ChartModule, TextElement, BarChartModule
 from mesa.visualization.UserParam import UserSettableParameter
 
 from model import MainModel, InfectionState, QuarantineState
 from agent import MainAgent
+
+clean_color = "#00008b"
+recovered_color = "#008000"
+quarantine_color = "#FFA500"
+infected_color = "#FF0000"
 
 # Text elements to Display
 
@@ -46,15 +51,15 @@ def draw(agent) :
 
 	portrayal = {"Shape" : "circle", "r" : 0.5, "Filled" : "true", "Layer" : 0}
 
-	if agent.infectionstate == InfectionState.CLEAN :		
-		portrayal["Color"] = ["#0000FF", "#9999FF"]
+	if agent.infectionstate == InfectionState.CLEAN :
+		portrayal["Color"] = clean_color
 	elif agent.infectionstate == InfectionState.RECOVERED :
-		portrayal["Color"] = ["#32CD32", "#7FFF00"]   #green
+		portrayal["Color"] = recovered_color #green
 	elif agent.quarantinestate == QuarantineState.QUARANTINE :
-		portrayal["Color"] = ["#FF9000", "#FF7B00"]   #orange
+		portrayal["Color"] = quarantine_color   #orange
 	elif agent.infectionstate == InfectionState.INFECTED :
-		portrayal["Color"] = ["#FF0000", "#FF9999"]
-		
+		portrayal["Color"] = infected_color
+
 
 	return portrayal
 
@@ -63,13 +68,29 @@ infected_number_text_element = InfectedTextElement()
 recovered_number_text_element = RecoveredTextElement()
 dead_number_text_element = DeadTextElement()
 agent_legend_element = AgentsLegend()
-canvas_element = CanvasGrid(draw, 20, 20, 500, 500)
+canvas_element = CanvasGrid(draw, 40, 40, 600, 600)
+
+line_chart = ChartModule(
+	[
+		{"Label" : "Susceptible", "Color": clean_color},
+		{"Label" : "Recovered", "Color" : recovered_color},
+		{"Label" : "Quarantine and Infected", "Color" : quarantine_color},
+		{"Label" : "Out and Infected", "Color" : infected_color},
+	]
+)
+
+bar_chart = BarChartModule(
+	[
+		{"Label" : "Stay In", "Color" : "#3349FF"},
+		{"Label" : "Go Out", "Color" : "#FF3C33"},
+	]
+)
 
 # Declare model parameters
 
 model_params = {
-    "height": 20,
-    "width": 20,
+    "height": 40,
+    "width": 40,
     "population_density" : UserSettableParameter("slider", "Population Density", 0.5, 0.1, 0.8, 0.1),
     "death_rate" : 0.02,
     #"transfer_rate" : 0.3,
@@ -81,5 +102,5 @@ model_params = {
 }
 
 server = ModularServer(MainModel,
-                       [canvas_element, infected_number_text_element, recovered_number_text_element, dead_number_text_element, agent_legend_element],
+                       [canvas_element, line_chart, bar_chart, infected_number_text_element, recovered_number_text_element, dead_number_text_element, agent_legend_element],
                        "Infection Model", model_params)

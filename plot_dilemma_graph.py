@@ -13,7 +13,7 @@ x_axis = []
 
 # Give the range of the steps to plot
 
-x = range(4, 19)
+x = range(3, 22)
 
 for i in x :
 	x_axis.append(i)
@@ -27,7 +27,7 @@ for i in  x :
 	actions_list = []
 
 	# Name of the csv file
-	with open('simulations/dilemma_stringent_5.csv', newline='') as file :
+	with open('simulations/dilemma_stringent_0.9.csv', newline='') as file :
 		reader = csv.reader(file)
 		for row in reader :
 			if (int(row[0]) == i) :
