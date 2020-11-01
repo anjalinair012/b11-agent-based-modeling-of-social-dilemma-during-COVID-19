@@ -25,6 +25,10 @@ class QuarantineState(enum.IntEnum) :
 
 ## Declare the Main Model of parameters
 
+def get_susceptible_number(model) :
+	susceptible_agents = [a for a in model.schedule.agents if a.infectionstate == InfectionState.CLEAN]
+	return len(susceptible_agents)
+
 
 def get_infected_number(model) :
 	infected_agents = [a for a in model.schedule.agents if a.infectionstate == InfectionState.INFECTED]
@@ -178,9 +182,8 @@ class MainModel(Model) :
 								"Dead" : get_dead_number,
 								"Stay In" : get_stay_in,
 								"Go Out" : get_go_out,
-								"Aspiration" : agent_tracking_aspiration,
-								"Stay in probability" : agent_tracking_stayin_probability,
-								"Go out probability" : agent_tracking_goout_probability,
+								"Susceptible" : get_susceptible_number,
+								"Aspiration" : get_average_aspiration,
 								"Average Aspiration" : get_average_aspiration,
 								"Average Stay In" : get_average_stay_in,
 								"Average Get Out" : get_average_go_out,

@@ -1,6 +1,8 @@
 from mesa.visualization.ModularVisualization import ModularServer
-from mesa.visualization.modules import CanvasGrid, ChartModule, TextElement, BarChartModule
+from mesa.visualization.modules import TextElement
 from mesa.visualization.UserParam import UserSettableParameter
+from Visualizatons_module.CanvasGridVisualization import CanvasGrid
+from Visualizatons_module.ChartVisualization import ChartModule
 
 from model import MainModel, InfectionState, QuarantineState
 from agent import MainAgent
@@ -99,29 +101,36 @@ infected_number_text_element = InfectedTextElement()
 recovered_number_text_element = RecoveredTextElement()
 dead_number_text_element = DeadTextElement()
 agent_legend_element = AgentsLegend()
-canvas_element = CanvasGrid(draw, 40, 40, 600, 600)
+canvas_element = CanvasGrid(draw, 40, 40, 400, 400)
 agent_infection_status_element = AgentInfectionStatusElement()
 agent_quarantine_status_element = AgentQuarantineStatusElement()
 agent_action_status_element = AgentActionTaken()
 
+line_chart = ChartModule(
+	[
+		{"Label" : "Susceptible", "Color": clean_color},
+		{"Label" : "Recovered", "Color" : recovered_color},
+		{"Label" : "Infected", "Color" : infected_color},
+	],canvas_width=20,canvas_height=10,pos_top = 16, pos_left = -550
+)
 
 line_chart_aspiration_comparision = ChartModule(
 	[	
 		{"Label" : "Average Aspiration", "Color" : "#9400D3"},
 		{"Label" : "Average Stay In", "Color" : "#FFA500"},
 		{"Label" : "Average Get Out", "Color" : "#E033ff"}
-	]
+	],canvas_width=100,canvas_height=50, pos_top = -350, pos_left = 200
 
 )
 
-line_chart_agent = ChartModule(
-	[
-		{"Label" : "Aspiration", "Color" : "#9400D3"},
-		{"Label" : "Stay in probability", "Color" : "#3349FF"},
-		{"Label" : "Go out probability", "Color" : "#FF3C33"},
-	]
+# line_chart_agent = ChartModule(
+# 	[
+# 		{"Label" : "Aspiration", "Color" : "#9400D3"},
+# 		{"Label" : "Stay in probability", "Color" : "#3349FF"},
+# 		{"Label" : "Go out probability", "Color" : "#FF3C33"},
+# 	]
 
-)
+# )
 
 # Declare model parameters
 
@@ -139,5 +148,5 @@ model_params = {
 }
 
 server = ModularServer(MainModel,
-                       [canvas_element, space_text_element, line_chart_aspiration_comparision, space_text_element, line_chart_agent, agent_infection_status_element, agent_quarantine_status_element, agent_action_status_element],
+                       [canvas_element, space_text_element, line_chart,line_chart_aspiration_comparision, space_text_element, agent_infection_status_element, agent_quarantine_status_element, agent_action_status_element],
                        "Infection Model", model_params)
