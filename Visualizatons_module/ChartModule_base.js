@@ -70,6 +70,9 @@ function ChartModule_base(series, canvas_width, canvas_height,pos_top,pos_left) 
     var chart = new Chart(context, {
         type: 'line',
         data: chartData,
+		title: {
+			text: "CHart name"
+		},
         options: chartOptions
     });
 

@@ -3,6 +3,7 @@ from mesa.visualization.modules import TextElement
 from mesa.visualization.UserParam import UserSettableParameter
 from Visualizatons_module.CanvasGridVisualization import CanvasGrid
 from Visualizatons_module.ChartVisualization import ChartModule
+from Visualizatons_module.TextDisplay import TextDisplay
 
 from model import MainModel, InfectionState, QuarantineState
 from agent import MainAgent
@@ -123,6 +124,8 @@ line_chart_aspiration_comparision = ChartModule(
 
 )
 
+model_legend = TextDisplay()
+
 # line_chart_agent = ChartModule(
 # 	[
 # 		{"Label" : "Aspiration", "Color" : "#9400D3"},
@@ -144,9 +147,10 @@ model_params = {
     #"initial_infection_rate" : 0.02,
     "initial_infection_rate" : UserSettableParameter("slider", "Initial Infection Rate", 0.02, 0.01, 0.08, 0.01),
     "government_stringent" : UserSettableParameter("slider", "Government Strictness", 0.5, 0.1, 0.9, 0.1),
-    "government_action_threshold" : UserSettableParameter("slider", "Government Action Threshold", 0.3, 0.1, 0.9, 0.1)
+    "government_action_threshold" : UserSettableParameter("slider", "Government Action Threshold", 0.3, 0.1, 0.9, 0.1),
+    "global_aspiration" :UserSettableParameter("slider", "Global Aspiration", 0.3,0.1,0.9,0.1)
 }
 
 server = ModularServer(MainModel,
-                       [canvas_element, space_text_element, line_chart,line_chart_aspiration_comparision, space_text_element, agent_infection_status_element, agent_quarantine_status_element, agent_action_status_element],
+                       [canvas_element, model_legend, space_text_element, line_chart,line_chart_aspiration_comparision],
                        "Infection Model", model_params)
