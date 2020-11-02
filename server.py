@@ -112,15 +112,15 @@ line_chart = ChartModule(
 		{"Label" : "Susceptible", "Color": clean_color},
 		{"Label" : "Recovered", "Color" : recovered_color},
 		{"Label" : "Infected", "Color" : infected_color},
-	],canvas_width=20,canvas_height=10,pos_top = 16, pos_left = -550
+	],canvas_width=20,canvas_height=10,pos_top = 16, pos_left = -550,title = '"Compare clean-infected-recovered"'
 )
 
 line_chart_aspiration_comparision = ChartModule(
 	[	
 		{"Label" : "Average Aspiration", "Color" : "#9400D3"},
 		{"Label" : "Average Stay In", "Color" : "#FFA500"},
-		{"Label" : "Average Get Out", "Color" : "#E033ff"}
-	],canvas_width=100,canvas_height=50, pos_top = -350, pos_left = 200
+		{"Label" : "Average Get Out", "Color" : "#E033ff"},
+	],canvas_width=100,canvas_height=50, pos_top = -350, pos_left = 200,title = '"Compare average aspiration-Stay In numbers-Get out numbers"'
 
 )
 

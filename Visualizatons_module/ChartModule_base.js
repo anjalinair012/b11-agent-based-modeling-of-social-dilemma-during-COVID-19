@@ -1,4 +1,4 @@
-function ChartModule_base(series, canvas_width, canvas_height,pos_top,pos_left) {
+function ChartModule_base(series, canvas_width, canvas_height,pos_top,pos_left,tt) {
     // Create the tag:
     var canvas_tag = "<canvas width='" + canvas_width + " !important' height='" + canvas_height + "!important' ";
     canvas_tag += "style='border: 3px solid black;position: relative; left:" + pos_left +"px; top:" + pos_top +"px;'></canvas>";
@@ -44,6 +44,10 @@ function ChartModule_base(series, canvas_width, canvas_height,pos_top,pos_left) 
             mode: 'index',
             intersect: false
         },
+		title: {
+			display: true,
+			text: tt
+		},
         hover: {
             mode: 'nearest',
             intersect: true
@@ -70,9 +74,6 @@ function ChartModule_base(series, canvas_width, canvas_height,pos_top,pos_left) 
     var chart = new Chart(context, {
         type: 'line',
         data: chartData,
-		title: {
-			text: "CHart name"
-		},
         options: chartOptions
     });
 

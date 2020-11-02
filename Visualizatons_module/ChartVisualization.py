@@ -53,6 +53,7 @@ class ChartModule(VisualizationElement):
         canvas_width=500,
         pos_top=200,
         pos_left=200,
+        title="''",
         data_collector_name="datacollector",
     ):
         """
@@ -70,10 +71,9 @@ class ChartModule(VisualizationElement):
         self.canvas_height = canvas_height
         self.canvas_width = canvas_width
         self.data_collector_name = data_collector_name
-
         series_json = json.dumps(self.series)
-        new_element = "new ChartModule_base({}, {},  {}, {}, {})"
-        new_element = new_element.format(series_json, canvas_width, canvas_height,pos_top,pos_left)
+        new_element = "new ChartModule_base({}, {},  {}, {}, {}, {})"
+        new_element = new_element.format(series_json, canvas_width, canvas_height,pos_top,pos_left,title)
         self.js_code = "elements.push(" + new_element + ");"
 
     def render(self, model):
