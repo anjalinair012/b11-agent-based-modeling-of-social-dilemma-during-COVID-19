@@ -3,9 +3,8 @@ var CanvasModule = function(canvas_width, canvas_height, grid_width, grid_height
 	// ------------------
 
 	// Create the tag with absolute positioning :
-	var canvas_tag = `<canvas width="${canvas_width}" height="${canvas_height}" style='border: 3px solid black;position: relative; left:-80px' class="world-grid"/>`
-
-	var parent_div_tag = '<div style="height:' + canvas_height + 'px;" class="world-grid-parent" !important></div>'
+	var canvas_tag = `<canvas width="${canvas_width}" height="${canvas_height}" style='border: 3px solid black;position: absolute' class="world-grid"/>`
+	var parent_div_tag = '<div style="height:' + canvas_height + 'px; position: relative; left: 100px" class="world-grid-parent" !important></div>'
 
 	// Append it to body:
 	var canvas = $(canvas_tag)[0];
@@ -16,6 +15,7 @@ var CanvasModule = function(canvas_width, canvas_height, grid_width, grid_height
 	$("#elements").append(parent);
 	parent.append(canvas);
 	parent.append(interaction_canvas);
+	
 
 	// Create the context for the agents and interactions and the drawing controller:
 	var context = canvas.getContext("2d");
